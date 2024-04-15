@@ -4,6 +4,7 @@ from langchain import Langchain
 import PyPDF2
 
 
+
 # Function to extract text from PDF
 def extract_text_from_pdf(pdf_file):
     text = ""
