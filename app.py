@@ -1,5 +1,5 @@
 import streamlit as st
-import langchain
+# import langchain
 import PyPDF2
 import os
 from transformers import BartTokenizer , BartForConditionalGeneration
