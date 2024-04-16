@@ -1,14 +1,23 @@
 import streamlit as st
 from transformers import pipeline
-from langchain import Langchain
+import langchain
 import PyPDF2
+import os
 
 
+def save_uploaded_file(uploaded_file):
+    temp_dir = "temp_files"
+    os.makedirs(temp_dir, exist_ok=True)
+    file_path = os.path.join(temp_dir, uploaded_file.name)
+    with open(file_path, "wb") as f:
+        f.write(uploaded_file.getbuffer())
+    return file_path
 
 # Function to extract text from PDF
 def extract_text_from_pdf(pdf_file):
     text = ""
-    with open(pdf_file, "rb") as file:
+    RP_file = save_uploaded_file(pdf_file)
+    with open(RP_file, "rb") as file:
         pdf_reader = PyPDF2.PdfFileReader(file)
         num_pages = pdf_reader.numPages
         for page_num in range(num_pages):
@@ -34,7 +43,7 @@ def extract_paper_info(text):
 # Function to build and fine-tune the chatbot
 def build_chatbot():
     # Fine-tuning language model for chatbot using Langchain
-    lang_model = Langchain()
+    lang_model = ''
 
     # Additional fine-tuning steps can be added here
 
@@ -64,15 +73,15 @@ def main():
         paper_info = extract_paper_info(text)
         st.write(paper_info)
 
-        # Build chatbot
-        st.subheader("Chatbot")
-        chatbot = build_chatbot()
+        # # Build chatbot
+        # st.subheader("Chatbot")
+        # chatbot = build_chatbot()
 
-        # Chat interface
-        user_input = st.text_input("You: ")
-        if user_input:
-            response = chatbot.generate_response(user_input)
-            st.write("Chatbot:", response)
+        # # Chat interface
+        # user_input = st.text_input("You: ")
+        # if user_input:
+        #     response = chatbot.generate_response(user_input)
+        #     st.write("Chatbot:", response)
 
     else:
         st.write("Please upload a PDF file")

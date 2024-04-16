@@ -2,3 +2,4 @@ streamlit
 transformers
 langchain
 PyPDF2
+tensorflow
