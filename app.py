@@ -38,7 +38,7 @@ def preprocess_text(text: str, tokenizer: PreTrainedTokenizerBase, max_length: i
 
 
 # Function to summarize text
-def summarize_text(text: str, max_length: int) -> str:
+def summarize_text(text: str) -> str:
     summarizer = pipeline("summarization")
     truncated_text = preprocess_text(text, summarizer.tokenizer, max_length)
     summary = summarizer(truncated_text, max_length=150, min_length=30, do_sample=False)[0]['summary_text']
