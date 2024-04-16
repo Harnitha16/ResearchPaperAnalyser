@@ -1,9 +1,11 @@
 import streamlit as st
-from transformers import pipeline
 import langchain
 import PyPDF2
 import os
-from transformers.tokenization_utils_base import PreTrainedTokenizerBase
+from transformers import BartTokenizer , BartForConditionalGeneration
+
+tokenizer = BartTokenizer.from_pretrained("facebook/bart-large-cnn")
+model = BartForConditionalGeneration.from_pretrained("facebook/bart-large-cnn")
 
 
 def save_uploaded_file(uploaded_file):
@@ -26,22 +28,21 @@ def extract_text_from_pdf(pdf_file):
             text += page.extract_text()
     return text
 
-def preprocess_text(text: str, tokenizer: PreTrainedTokenizerBase, max_length: int) -> str:
+def generate_summary(text: str):
     # Tokenize the text
-    tokens = tokenizer(text, return_tensors="pt", max_length=50000, truncation=True)
+    tokens = tokenizer(text, return_tensors="pt", max_length=1024, truncation=True)
+    summary_ids = model.generate(tokens.input_ids, num_beams = 4, max_length = 200, early_stopping = True)
 
-    # Convert token IDs back to text
-    truncated_text = tokenizer.decode(tokens["input_ids"][0], skip_special_tokens=True)
 
-    return truncated_text
+    return summary_ids
+
 
 
 
 # Function to summarize text
 def summarize_text(text: str) -> str:
-    summarizer = pipeline("summarization")
-    truncated_text = preprocess_text(text, summarizer.tokenizer, max_length)
-    summary = summarizer(truncated_text, max_length=150, min_length=30, do_sample=False)[0]['summary_text']
+    summary_ids = generate_summary(text)
+    summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True, clean_ip_tokenization_spaces=False)
     return summary
 
 # Function to extract key information from the paper
@@ -64,6 +65,7 @@ def build_chatbot():
 # Main function to run the Streamlit app
 def main():
     st.title("Research Paper Understanding Chatbot")
+    st.write("As of now supports only summarization.")
 
     # Upload PDF file
     uploaded_file = st.file_uploader("Upload a research paper (PDF)", type="pdf")
@@ -76,13 +78,14 @@ def main():
 
         # Display summary of the paper
         st.subheader("Summary of the Paper")
-        summary = summarize_text(text)
-        st.write(summary)
+        with st.spinner("Brewing a potion for your paper's essence..."):
+            summary = summarize_text(text)
+            st.write(summary)
 
-        # Extract key information from the paper
-        st.subheader("Key Information")
-        paper_info = extract_paper_info(text)
-        st.write(paper_info)
+        # # Extract key information from the paper
+        # st.subheader("Key Information")
+        # paper_info = extract_paper_info(text)
+        # st.write(paper_info)
 
         # # Build chatbot
         # st.subheader("Chatbot")
