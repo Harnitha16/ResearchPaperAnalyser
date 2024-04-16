@@ -3,6 +3,7 @@ from transformers import pipeline
 import langchain
 import PyPDF2
 import os
+from transformers.tokenization_utils_base import PreTrainedTokenizerBase
 
 
 def save_uploaded_file(uploaded_file):
@@ -25,13 +26,23 @@ def extract_text_from_pdf(pdf_file):
             text += page.extract_text()
     return text
 
+def preprocess_text(text: str, tokenizer: PreTrainedTokenizerBase, max_length: int) -> str:
+    # Tokenize the text
+    tokens = tokenizer(text, return_tensors="pt", max_length=50000, truncation=True)
+
+    # Convert token IDs back to text
+    truncated_text = tokenizer.decode(tokens["input_ids"][0], skip_special_tokens=True)
+
+    return truncated_text
+
+
 
 # Function to summarize text
-def summarize_text(text):
+def summarize_text(text: str, max_length: int) -> str:
     summarizer = pipeline("summarization")
-    summary = summarizer(text, max_length=150, min_length=30, do_sample=False)[0]['summary_text']
+    truncated_text = preprocess_text(text, summarizer.tokenizer, max_length)
+    summary = summarizer(truncated_text, max_length=150, min_length=30, do_sample=False)[0]['summary_text']
     return summary
-
 
 # Function to extract key information from the paper
 def extract_paper_info(text):
