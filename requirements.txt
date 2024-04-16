@@ -3,3 +3,4 @@ transformers
 langchain
 PyPDF2
 tensorflow
+tf-keras
